@@ -9,6 +9,7 @@ import {
   View,
 } from 'react-native';
 import initSqlJs from 'sql.js';
+import sqlWasmBase64 from './sqlWasmBase64';
 
 const STORAGE_KEY = 'mis-tareas-db';
 
@@ -39,7 +40,7 @@ export default function App() {
     async function init() {
       try {
         const SQL = await initSqlJs({
-          locateFile: (file) => `/${file}`,
+          wasmBinary: base64ToBytes(sqlWasmBase64).buffer,
         });
 
         const saved = localStorage.getItem(STORAGE_KEY);
