@@ -20,8 +20,5 @@
     "ios": "expo start --ios",
     "web": "expo start --web"
   },
-  "private": true,
-  "devDependencies": {
-    "playwright": "^1.61.0"
-  }
+  "private": true
 }
