@@ -1,0 +1,12 @@
+{
+  "name": "Expo Mis Tareas",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:1-20",
+  "forwardPorts": [8081],
+  "portsAttributes": {
+    "8081": {
+      "label": "Expo Web",
+      "onAutoForward": "openPreview"
+    }
+  },
+  "postCreateCommand": "npm install"
+}

@@ -2,6 +2,9 @@
   "name": "mobil",
   "version": "1.0.0",
   "main": "index.js",
+  "engines": {
+    "node": ">=20.19.4"
+  },
   "dependencies": {
     "expo": "~56.0.12",
     "expo-status-bar": "~56.0.4",
