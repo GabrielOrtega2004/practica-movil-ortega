@@ -10,7 +10,6 @@ import {
 } from 'react-native';
 import initSqlJs from 'sql.js';
 
-const SQLJS_VERSION = '1.14.1';
 const STORAGE_KEY = 'mis-tareas-db';
 
 function bytesToBase64(bytes) {
@@ -29,6 +28,7 @@ function base64ToBytes(base64) {
 export default function App() {
   const dbRef = useRef(null);
   const [ready, setReady] = useState(false);
+  const [error, setError] = useState(null);
   const [sqliteVersion, setSqliteVersion] = useState('');
   const [tasks, setTasks] = useState([]);
   const [newTaskText, setNewTaskText] = useState('');
@@ -37,24 +37,28 @@ export default function App() {
     let cancelled = false;
 
     async function init() {
-      const SQL = await initSqlJs({
-        locateFile: (file) => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/${SQLJS_VERSION}/${file}`,
-      });
+      try {
+        const SQL = await initSqlJs({
+          locateFile: (file) => `/${file}`,
+        });
 
-      const saved = localStorage.getItem(STORAGE_KEY);
-      const db = saved ? new SQL.Database(base64ToBytes(saved)) : new SQL.Database();
+        const saved = localStorage.getItem(STORAGE_KEY);
+        const db = saved ? new SQL.Database(base64ToBytes(saved)) : new SQL.Database();
 
-      if (!saved) {
-        db.run(
-          'CREATE TABLE tasks (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, done INTEGER NOT NULL DEFAULT 0);'
-        );
+        if (!saved) {
+          db.run(
+            'CREATE TABLE tasks (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, done INTEGER NOT NULL DEFAULT 0);'
+          );
+        }
+
+        if (cancelled) return;
+        dbRef.current = db;
+        setSqliteVersion(db.exec('SELECT sqlite_version();')[0].values[0][0]);
+        refreshTasks();
+        setReady(true);
+      } catch (err) {
+        if (!cancelled) setError(err && err.message ? err.message : String(err));
       }
-
-      if (cancelled) return;
-      dbRef.current = db;
-      setSqliteVersion(db.exec('SELECT sqlite_version();')[0].values[0][0]);
-      refreshTasks();
-      setReady(true);
     }
 
     init();
@@ -95,6 +99,15 @@ export default function App() {
     dbRef.current.run('DELETE FROM tasks WHERE id = ?;', [id]);
     refreshTasks();
     persist();
+  }
+
+  if (error) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.title}>Error al iniciar SQLite</Text>
+        <Text selectable style={{ marginTop: 12 }}>{error}</Text>
+      </View>
+    );
   }
 
   if (!ready) {
